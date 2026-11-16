@@ -13,6 +13,19 @@ Course project (Software Maintenance and Evolution, UFMG). Group project.
 4. SonarCloud scans `app/` and its issues for the PR are fetched through the API.
 5. `tool/build_log.py` merges the expected smells (from a `SMELLS:` line in the PR body or `smell:` labels), the LLM smells and the Sonar issues into one JSON per PR, uploaded as a workflow artifact. `tool/analyze_results.py` compares them.
 
+```mermaid
+flowchart LR
+    PR["Pull request"] --> WF["GitHub Actions<br/>compute diff"]
+    WF --> LLM["tool/generate_review.py<br/>OpenAI model + prompt.txt"]
+    LLM --> CM["Review comment<br/>posted on the PR"]
+    LLM --> SM["Structured smells<br/>file, line, type, severity"]
+    WF --> SQ["SonarCloud scan of app/<br/>issues fetched via API"]
+    EXP["Expected smells<br/>PR body or labels"] --> LOG
+    SM --> LOG["tool/build_log.py<br/>one JSON per PR"]
+    SQ --> LOG
+    LOG --> AN["tool/analyze_results.py<br/>LLM vs Sonar vs expected"]
+```
+
 `app/` is a small task-management codebase used as the target. Smells were introduced on purpose: long parameter lists, god methods, duplicated code, high cyclomatic complexity and feature envy.
 
 ## Results
